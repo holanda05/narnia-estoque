@@ -1,0 +1,6 @@
+casafood.db
+database.db
+*_backup.db
+__pycache__/
+*.pyc
+.env

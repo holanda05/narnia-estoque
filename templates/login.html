@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Narnia - Login</title>
+
+  <link rel="manifest" href="/static/manifest.json">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Narnia">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <link rel="apple-touch-icon" href="/static/icon.png">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-app">
+  <div class="login-wrap">
+    <div class="login-card">
+      <h1 class="login-title">📦 Narnia</h1>
+      <p class="login-subtitle">Seu estoque da casa no iPhone, de forma simples.</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert-app">
+            {% for msg in messages %}
+              <div>{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post">
+        <div class="mb-16">
+          <label class="label-app">Usuário</label>
+          <input name="usuario" class="input-app" placeholder="Digite seu usuário">
+        </div>
+
+        <div class="mb-16">
+          <label class="label-app">Senha</label>
+          <input name="senha" type="password" class="input-app" placeholder="Digite sua senha">
+        </div>
+
+        <button class="btn-app" style="width:100%;">Entrar</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Narnia - Estoque</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/static/manifest.json">
+
+  <meta name="theme-color" content="#4f46e5">
+
+  <!-- iPhone / iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> 
+  <meta name="apple-mobile-web-app-title" content="Narnia">
+  <link rel="apple-touch-icon" href="/static/icon.png">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <!-- SCANNER MAIS RÁPIDO -->
+  <script src="https://unpkg.com/@ericblade/quagga2/dist/quagga.js"></script>
+
+</head>
+
+<body class="bg-app">
+  <div class="container-app">
+
+    <div class="topbar">
+      <div>
+        <h1 class="brand-title">📦 Narnia</h1>
+        <p class="brand-subtitle">Controle da casa de forma simples</p>
+      </div>
+
+      <div class="topbar-actions">
+        <a href="/compras" class="btn-app">🛒 Lista de Compras</a>
+        <a href="/logout" class="btn-soft">Sair</a>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert-app">
+          {% for msg in messages %}
+            <div>{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+<div class="card-box">
+
+  <form action="/add" method="post" class="form-grid">
+    <input id="campo-produto" name="nome" class="input-app" placeholder="Produto" autofocus>
+
+    <input name="quantidade" type="number" min="1" inputmode="numeric" class="input-app" placeholder="Qtd">
+
+    <select name="categoria" class="select-app">
+      <option>Geladeira</option>
+      <option>Freezer</option>
+      <option>Despensa</option>
+    </select>
+
+    <button class="btn-app">Adicionar</button>
+  </form>
+
+  <div id="feedback-add" class="feedback-add"></div>
+
+  <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+
+    <button type="button" id="btn-abrir-scanner" class="btn-app btn-scan">
+      📷 Escanear produto
+    </button>
+
+    <button type="button" id="btn-fechar-scanner" class="btn-soft" style="display:none;">
+      Fechar câmera
+    </button>
+
+  </div>
+
+
+  <div id="scanner-box" style="display:none; margin-top:14px;">
+
+    <div
+      id="scanner-video">
+	<div class="scan-frame"></div>
+    </div>
+
+    <div id="scanner-status" style="margin-top:10px; color:#6b7280; font-weight:600;">
+      Aponte a câmera para o código de barras.
+    </div>
+
+  </div>
+
+
+  <div class="search-box">
+    <input
+      type="text"
+      id="pesquisa-estoque"
+      class="input-app"
+      placeholder="Pesquisar produto no estoque..."
+    >
+  </div>
+
+</div>
+
+    <div class="grid-sections">
+
+      <div class="section-card categoria-card" id="categoria-geladeira">
+        <h2 class="section-title">🧊 Geladeira</h2>
+
+        <div class="categoria-itens">
+          {% for item in geladeira %}
+            <div class="item-card item-pesquisavel" data-nome="{{ item['nome']|lower }}">
+              <div class="item-left">
+
+                <div class="item-name">{{ item["nome"] }}</div>
+                              
+                   <div class="item-meta">
+                   Quantidade: <strong>{{ item["quantidade"] }}</strong>
+ 		</div>
+              </div>
+
+              <div class="item-actions">
+                <a href="/mais/{{ item['id'] }}" class="btn-mini btn-plus">+</a>
+                <a href="/menos/{{ item['id'] }}" class="btn-mini btn-minus">-</a>
+                <a href="/delete/{{ item['id'] }}" class="btn-mini btn-delete">🗑</a>
+              </div>
+            </div>
+          {% else %}
+            <p class="empty-state">Nenhum item na geladeira.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="section-card categoria-card" id="categoria-freezer">
+        <h2 class="section-title">❄️ Freezer</h2>
+
+        <div class="categoria-itens">
+          {% for item in freezer %}
+            <div class="item-card item-pesquisavel" data-nome="{{ item['nome']|lower }}">
+              <div class="item-left">
+                <div class="item-name">{{ item["nome"] }}</div>
+                <div class="item-meta">Quantidade: <strong>{{ item["quantidade"] }}</strong></div>
+              </div>
+
+              <div class="item-actions">
+                <a href="/mais/{{ item['id'] }}" class="btn-mini btn-plus">+</a>
+                <a href="/menos/{{ item['id'] }}" class="btn-mini btn-minus">-</a>
+                <a href="/delete/{{ item['id'] }}" class="btn-mini btn-delete">🗑</a>
+              </div>
+            </div>
+          {% else %}
+            <p class="empty-state">Nenhum item no freezer.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="section-card categoria-card" id="categoria-despensa">
+        <h2 class="section-title">📦 Despensa</h2>
+
+        <div class="categoria-itens">
+          {% for item in despensa %}
+            <div class="item-card item-pesquisavel" data-nome="{{ item['nome']|lower }}">
+              <div class="item-left">
+                <div class="item-name">{{ item["nome"] }}</div>
+                <div class="item-meta">Quantidade: <strong>{{ item["quantidade"] }}</strong></div>
+              </div>
+
+              <div class="item-actions">
+                <a href="/mais/{{ item['id'] }}" class="btn-mini btn-plus">+</a>
+                <a href="/menos/{{ item['id'] }}" class="btn-mini btn-minus">-</a>
+                <a href="/delete/{{ item['id'] }}" class="btn-mini btn-delete">🗑</a>
+              </div>
+            </div>
+          {% else %}
+            <p class="empty-state">Nenhum item na despensa.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+<div id="sem-resultado-estoque" class="search-empty" style="display:none;">
+  Nenhum produto encontrado na pesquisa.
+</div>
+  </div>
+
+
+<script>
+
+let scannerAtivo=false;
+
+const btnAbrirScanner=document.getElementById("btn-abrir-scanner");
+const btnFecharScanner=document.getElementById("btn-fechar-scanner");
+const scannerBox=document.getElementById("scanner-box");
+const scannerVideo=document.getElementById("scanner-video");
+const scannerStatus=document.getElementById("scanner-status");
+const campoProduto=document.getElementById("campo-produto");
+
+
+function abrirScanner(){
+
+scannerBox.style.display="block";
+btnFecharScanner.style.display="inline-flex";
+
+scannerStatus.textContent="Abrindo câmera...";
+
+Quagga.init({
+
+inputStream:{
+type:"LiveStream",
+target: document.querySelector("#scanner-video"),
+constraints:{
+facingMode:"environment",
+width:640,
+height:480 
+}
+},
+
+decoder:{
+readers:[
+"ean_reader",
+"ean_8_reader",
+"upc_reader",
+"code_128_reader"
+]
+},
+
+locate:true
+
+},function(err){
+
+if(err){
+console.error(err);
+scannerStatus.textContent="Erro ao abrir câmera";
+return;
+}
+
+Quagga.start();
+scannerAtivo=true;
+scannerStatus.textContent="Aponte para o código";
+
+});
+
+Quagga.onDetected(function(result){
+
+if(navigator.vibrate){
+navigator.vibrate(200);
+}
+
+const codigo=result.codeResult.code;
+
+Quagga.offDetected();
+Quagga.stop();
+
+scannerStatus.textContent="Consultando produto...";
+
+// primeiro procura no banco local
+fetch(`/buscar_produto/${codigo}`)
+.then(res=>res.json())
+.then(local=>{
+
+if(local.nome){
+
+campoProduto.value=local.nome;
+scannerStatus.textContent="Produto encontrado no banco";
+
+}else{
+
+// se não existir consulta internet
+fetch(`https://world.openfoodfacts.org/api/v0/product/${codigo}.json`)
+.then(res=>res.json())
+.then(data=>{
+
+let nome;
+
+if(data.status===1 && data.product.product_name){
+nome=data.product.product_name;
+}else{
+nome=codigo;
+}
+
+campoProduto.value=nome;
+
+// salva no banco
+fetch("/salvar_codigo",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+codigo:codigo,
+nome:nome
+})
+});
+
+scannerStatus.textContent="Produto salvo";
+
+});
+
+}
+
+fecharScanner();
+
+});
+
+});
+
+}
+
+function fecharScanner(){
+
+if(scannerAtivo){
+Quagga.stop();
+scannerAtivo=false;
+}
+
+scannerBox.style.display="none";
+btnFecharScanner.style.display="none";
+
+}
+
+btnAbrirScanner.onclick=abrirScanner;
+btnFecharScanner.onclick=fecharScanner;
+
+</script>
+<script>
+
+const formAdicionar = document.querySelector(".form-grid");
+
+if(formAdicionar){
+
+formAdicionar.addEventListener("submit", function(){
+
+  const feedback = document.getElementById("feedback-add");
+
+  feedback.style.display = "block";
+  feedback.innerText = "✔ Produto adicionado";
+
+  setTimeout(()=>{
+    feedback.style.display = "none";
+  },2000);
+
+});
+
+}
+
+</script>
+
+<script>
+
+if ('serviceWorker' in navigator) {
+
+  navigator.serviceWorker.register('/static/sw.js')
+    .then(function () {
+      console.log("PWA ativo");
+    })
+    .catch(function (erro) {
+      console.log("Erro no PWA:", erro);
+    });
+
+}
+</script>
+
+</body>
+</html>

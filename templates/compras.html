@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Narnia - Compras</title>
+
+<link rel="manifest" href="/static/manifest.json">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Narnia">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="/static/icon.png">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<style>
+
+.compra-card{
+background:white;
+padding:18px;
+border-radius:16px;
+box-shadow:0 4px 12px rgba(0,0,0,0.05);
+margin-bottom:14px;
+}
+
+.compra-nome{
+font-size:18px;
+font-weight:700;
+}
+
+.compra-categoria{
+font-size:13px;
+color:#6b7280;
+margin-bottom:6px;
+}
+
+.compra-qtd{
+font-size:14px;
+color:#6b7280;
+margin-bottom:12px;
+}
+
+.compra-form{
+display:flex;
+gap:10px;
+}
+
+.compra-form input{
+flex:1;
+}
+
+.btn-buy{
+background:#4f46e5;
+color:white;
+border:none;
+border-radius:10px;
+padding:10px 16px;
+font-weight:600;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body class="bg-app">
+
+<div class="container-app">
+
+<div class="topbar">
+
+<div>
+<h1 class="brand-title">🛒 Lista de Compras</h1>
+<p class="brand-subtitle">Itens que estão acabando ou já acabaram</p>
+</div>
+
+<div class="topbar-actions">
+<a href="/estoque" class="btn-soft">Voltar ao estoque</a>
+</div>
+
+</div>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="alert-app">
+{% for msg in messages %}
+<div>{{ msg }}</div>
+{% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<div class="card-box search-box">
+<input
+type="text"
+id="pesquisa-compras"
+class="input-app"
+placeholder="Pesquisar item na lista de compras..."
+>
+</div>
+
+<div class="grid-sections"
+id="lista-compras"
+style="
+grid-template-columns: 1fr;
+justify-content:center;
+gap:20px;
+">
+
+{% for item in itens %}
+
+<div class="compra-card compra-item-pesquisavel"
+data-nome="{{ item['nome']|lower }}">
+
+<div class="compra-top">
+
+<div>
+<div class="compra-nome">{{ item["nome"] }}</div>
+
+<div class="compra-qtd">
+Qtd na lista: <strong>{{ item["quantidade"] }}</strong>
+</div>
+
+<div class="compra-categoria">
+{% if item["categoria"] == "Geladeira" %}🧊{% endif %}
+{% if item["categoria"] == "Freezer" %}❄️{% endif %}
+{% if item["categoria"] == "Despensa" %}📦{% endif %}
+{{ item["categoria"] }}
+</div>
+
+</div>
+
+</div>
+
+<form action="/comprado/{{ item['id'] }}" method="post" class="compra-form">
+
+<input
+type="number"
+min="1"
+name="quantidade"
+class="input-app"
+placeholder="Qtd comprada"
+required
+>
+
+<button class="btn-buy">
+✔ Comprar
+</button>
+
+</form>
+
+</div>
+
+{% else %}
+
+<div class="section-card">
+<p class="empty-state">
+Sua lista de compras está vazia 🎉
+</p>
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+<script>
+
+const campoPesquisaCompras=document.getElementById("pesquisa-compras");
+const itensCompras=document.querySelectorAll(".compra-item-pesquisavel");
+const semResultadoCompras=document.getElementById("sem-resultado-compras");
+
+campoPesquisaCompras.addEventListener("input",function(){
+
+const termo=this.value.toLowerCase().trim();
+
+let totalVisiveis=0;
+
+itensCompras.forEach(item=>{
+
+const nome=item.getAttribute("data-nome");
+
+if(nome.includes(termo)){
+
+item.style.display="block";
+totalVisiveis++;
+
+}else{
+
+item.style.display="none";
+
+}
+
+});
+
+semResultadoCompras.style.display=totalVisiveis===0?"block":"none";
+
+});
+
+</script>
+
+<script>
+
+document.querySelectorAll(".compra-form").forEach(form=>{
+
+form.addEventListener("submit",function(){
+
+if(navigator.vibrate){
+navigator.vibrate(80);
+}
+
+const toast=document.createElement("div");
+
+toast.className="toast";
+toast.innerText="✔ Produto adicionado ao estoque";
+
+document.body.appendChild(toast);
+
+setTimeout(()=>{
+toast.remove();
+},2000);
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
